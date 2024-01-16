@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useRef, useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import axios from "axios";
 
@@ -53,6 +53,7 @@ function  MainPage(){
 //     console.log('Deleting program');
 //   };
 console.log("aaye");
+const formRef = useRef(null);
 const [programs, setPrograms] = useState([
   {
     name: '',
@@ -238,13 +239,7 @@ const handleProgramxClick = (programId) => {
 };
 const handleSaveDraft = () => {
   // Implement save draft logic here
-  axios.post('/programs/save')
-  .then(response => {
-      console.log(response.data);
-  })
-  .catch(error => {
-      console.error(error);
-  });
+  alert('Draft saved successfully!');
   console.log('Save Draft:', formData);
 };
 
@@ -259,6 +254,11 @@ const handleUpdate = () => {
   });
   console.log('Save:', formData);
 };
+const handleDelete2 = () => {
+  // Your delete logic here
+  window.location.reload();
+};
+
 const handleSave = () => {
   const accessToken = localStorage.getItem('token');
   console.log("this is the access token",accessToken );
@@ -276,7 +276,7 @@ const handleSave = () => {
       console.error(error);
       if (error.response && error.response.status === 401) {
         // Redirect to login page when status code is 401
-        // window.location.href = '/login'; // Replace '/login' with the actual login page URL
+        window.location.href = '/login'; // Replace '/login' with the actual login page URL
       }
   });
   console.log('Save:', formData);
@@ -335,7 +335,7 @@ const handleDelete = () => {
         <div>
           <h2>Add Program</h2>
           <p>* Required to save as Program</p>
-          <Form>
+          <Form ref={formRef}>
         <Row>
           <Col>
             <Form.Group controlId="formPrice">
@@ -545,7 +545,7 @@ const handleDelete = () => {
     </Button>
   </Col>
   <Col>
-    <Button variant="danger" onClick={handleDelete}>
+    <Button variant="danger" onClick={handleDelete2}>
       Delete
     </Button>
   </Col>
