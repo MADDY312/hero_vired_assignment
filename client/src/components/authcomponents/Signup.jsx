@@ -20,7 +20,7 @@ function Signup  ()  {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Submitted registration details:', registrationDetails);
-    axios.post('http://localhost:3000/auth/signup',registrationDetails)
+    axios.post('/auth/signup',registrationDetails)
   .then(response => {
       console.log(response.data);
       window.location.href = '/login'; 

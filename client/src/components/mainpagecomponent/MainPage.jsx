@@ -124,7 +124,7 @@ const [authenticated, setAuthenticated] = useState(false);
   const fetchUserDetails = async (token) => {
     // Make an API call to get user details using the token
     // Replace this with your actual API endpoint and implementation
-    const response = await fetch('http://localhost:3000/auth/user-details', {
+    const response = await fetch('/auth/user-details', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -188,7 +188,7 @@ const onEditSubmit = async (editedProgram) => {
   try {
     const accessToken = localStorage.getItem('token');
     // Make an API call to update the program details
-    const response = await fetch(`http://localhost:3000/programs/updateprogram/${selectedProgram.name}`, {
+    const response = await fetch(`/programs/updateprogram/${selectedProgram.name}`, {
       method: 'PUT',
       headers: {
         'Authorization': `${accessToken}`,
@@ -218,7 +218,7 @@ useEffect(() => {
   const fetchPrograms = async () => {
     try {
       console.log("you came here data");
-      const response = await fetch('http://localhost:3000/programs/getallprograms');
+      const response = await fetch('/programs/getallprograms');
       const data = await response.json();
       // Assuming the API response is an array of programs
       console.log("this is data",data);
@@ -250,7 +250,7 @@ const handleSaveDraft = () => {
 
 const handleUpdate = () => {
   // Implement save logic here
-  axios.post(`http://localhost:3000/programs/updateprogram/${selectedProgram.id}`,selectedProgram)
+  axios.post(`/programs/updateprogram/${selectedProgram.id}`,selectedProgram)
   .then(response => {
       console.log(response.data);
   })
@@ -267,7 +267,7 @@ const handleSave = () => {
     'Content-Type': 'application/json', // Modify the content type based on your requirements
   };
   // Implement save logic here
-  axios.post('http://localhost:3000/programs/save',formData,{headers})
+  axios.post('/programs/save',formData,{headers})
   .then(response => {
       console.log(response.data);
       window.location.reload();
@@ -288,7 +288,7 @@ const handleDelete = () => {
   const headers = {
     'Authorization': `${accessToken}`,
   };
-  axios.get(`http://localhost:3000/programs/deleteprogram/${selectedProgram.name}`,{headers})
+  axios.get(`/programs/deleteprogram/${selectedProgram.name}`,{headers})
   .then(response => {
       console.log(response.data);
       window.location.reload();
@@ -316,7 +316,7 @@ const handleDelete = () => {
     }
     else{
       console.log("did you come here")
-    axios.get(`http://localhost:3000/programs/getprogrambyid/${program}`,)
+    axios.get(`/programs/getprogrambyid/${program}`,)
     .then(response => {
         console.log(response.data);
         setSelectedProgram(response.data);
