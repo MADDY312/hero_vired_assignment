@@ -752,6 +752,14 @@ const handleDelete = () => {
     </div>
   );
 };
+const handleLogout = () => {
+  // Clear the token from localStorage or your state management solution
+  localStorage.removeItem('token');
+  setAuthenticated(false);
+  setUsername('');
+  // You may also want to redirect the user to the login page or do other actions as needed
+  window.location.href = '/login';
+};
 
   return (
     <div>
@@ -767,6 +775,9 @@ const handleDelete = () => {
               <>
                 <li className="nav-item">
                   <span className="nav-link">Welcome, {username}!</span>
+                </li>
+                <li className="nav-item">
+                  <button className="btn btn-link nav-link" onClick={handleLogout}>Logout</button>
                 </li>
                 {/* Add other authenticated links here */}
               </>
