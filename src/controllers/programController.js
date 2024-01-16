@@ -31,7 +31,7 @@ const getProgramById = async (req, res) => {
   const programId = req.params.id;
 
   try {
-    const result = await pool.query('SELECT * FROM programs WHERE id = $1', [programId]);
+    const result = await pool.query('SELECT * FROM programs WHERE name = $1', [programId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Program not found' });
@@ -146,8 +146,9 @@ const updateProgram = async (req, res) => {
   } = req.body;
 
   try {
+    console.log("came in update programs",programId);
     const result = await pool.query(
-      'UPDATE programs SET name=$1, price=$2, domain=$3, type=$4, registrations=$5, description=$6, placement_assurance=$7, image_url=$8, university_name=$9, faculty_profile=$10, learning_hours=$11,certificate=$12, eligibility_criteria=$13 WHERE id=$14 RETURNING *',
+      'UPDATE programs SET name=$1, price=$2, domain=$3, type=$4, registrations=$5, description=$6, placement_assurance=$7, image_url=$8, university_name=$9, faculty_profile=$10, learning_hours=$11,certificate=$12, eligibility_criteria=$13 WHERE name=$14 RETURNING *',
       [name, price, domain, type, registrations, description, placementAssurance, imageUrl, universityName, facultyProfile, learningHours,  certificate, eligibilityCriteria, programId]
     );
 
@@ -183,7 +184,7 @@ const deleteProgram = async (req, res) => {
   const programId = req.params.id;
 
   try {
-    const result = await pool.query('DELETE FROM programs WHERE id = $1 RETURNING *', [programId]);
+    const result = await pool.query('DELETE FROM programs WHERE name = $1 RETURNING *', [programId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Program not found' });

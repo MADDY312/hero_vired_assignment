@@ -53,7 +53,24 @@ function  MainPage(){
 //     console.log('Deleting program');
 //   };
 console.log("aaye");
-const [programs, setPrograms] = useState([]);
+const [programs, setPrograms] = useState([
+  {
+    name: '',
+    price: '',
+    domain: '',
+    type: '',
+    registrations: '',
+    description: '',
+    placementAssurance: '',
+    imageUrl: '',
+    universityName: '',
+    facultyProfile: '',
+    learningHours: '',
+    certificate: '',
+    eligibilityCriteria: '',
+  },
+  // Add more program objects as needed
+]);
 const [formData, setFormData] = useState({
   name: '',
   price: '',
@@ -74,7 +91,63 @@ const [formData, setFormData] = useState({
 const [isEditing, setIsEditing] = useState(false);
 const [selectedProgram, setSelectedProgram] = useState(null);
 const [editedProgram, setEditedProgram] = useState({ ...selectedProgram });
+const [authenticated, setAuthenticated] = useState(false);
+  const [username, setUsername] = useState('');
 
+  useEffect(() => {
+    // Check if the user is authenticated (e.g., by checking the token in localStorage)
+    const fetchUserData = async () => {
+      // Check if the user is authenticated (e.g., by checking the token in localStorage)
+      const token = localStorage.getItem('token');
+  
+      if (token) {
+        try {
+          // Fetch user details (you may need an API endpoint for this)
+          // For now, let's assume you have a function fetchUserDetails that returns the username
+          const user = await fetchUserDetails(token);
+          console.log("this is theddd user", user);
+  
+          if (user) {
+            setAuthenticated(true);
+            console.log("sandjd",user.user.username);
+            setUsername(user.user.username);
+          }
+        } catch (error) {
+          console.error('Error fetching user details:', error);
+        }
+      }
+    };
+  
+    // Call the async function
+    fetchUserData();
+  }, []);
+  const fetchUserDetails = async (token) => {
+    // Make an API call to get user details using the token
+    // Replace this with your actual API endpoint and implementation
+    const response = await fetch('http://localhost:3000/auth/user-details', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log("yoda moda");
+    if (response.ok) {
+      console.log("tudum");
+      console.log("this is json response");
+      
+      // Parse the JSON data
+      const user = await response.json();
+      
+      console.log("these are user details", user);
+      
+      return user;
+    }else {
+      // Handle error fetching user details
+      console.log("hulla huuuun");
+      console.error('Error fetching user details:', response.statusText);
+      return null;
+    }
+  };
 
 const handleEditClick = () => {
   setIsEditing(true);
@@ -113,10 +186,12 @@ const handleChange = (e) => {
 };
 const onEditSubmit = async (editedProgram) => {
   try {
+    const accessToken = localStorage.getItem('token');
     // Make an API call to update the program details
-    const response = await fetch(`/programs/updateprogram/${selectedProgram.id}`, {
+    const response = await fetch(`http://localhost:3000/programs/updateprogram/${selectedProgram.name}`, {
       method: 'PUT',
       headers: {
+        'Authorization': `${accessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(editedProgram),
@@ -131,6 +206,10 @@ const onEditSubmit = async (editedProgram) => {
     }
   } catch (error) {
     console.error('Error updating program details:', error);
+    if (error.response && error.response.status === 401) {
+      // Redirect to login page when status code is 401
+      window.location.href = '/login'; // Replace '/login' with the actual login page URL
+    }
   }
 };
 
@@ -138,9 +217,11 @@ useEffect(() => {
   // Function to fetch programs from the API
   const fetchPrograms = async () => {
     try {
-      const response = await fetch('/getallprograms');
+      console.log("you came here data");
+      const response = await fetch('http://localhost:3000/programs/getallprograms');
       const data = await response.json();
       // Assuming the API response is an array of programs
+      console.log("this is data",data);
       setPrograms(data);
     } catch (error) {
       console.error('Error fetching programs:', error);
@@ -169,7 +250,7 @@ const handleSaveDraft = () => {
 
 const handleUpdate = () => {
   // Implement save logic here
-  axios.post(`/programs/updateprogram/${selectedProgram.id}`,selectedProgram)
+  axios.post(`http://localhost:3000/programs/updateprogram/${selectedProgram.id}`,selectedProgram)
   .then(response => {
       console.log(response.data);
   })
@@ -179,24 +260,45 @@ const handleUpdate = () => {
   console.log('Save:', formData);
 };
 const handleSave = () => {
+  const accessToken = localStorage.getItem('token');
+  console.log("this is the access token",accessToken );
+  const headers = {
+    'Authorization': `${accessToken}`,
+    'Content-Type': 'application/json', // Modify the content type based on your requirements
+  };
   // Implement save logic here
-  axios.post('/programs/save',formData)
+  axios.post('http://localhost:3000/programs/save',formData,{headers})
   .then(response => {
       console.log(response.data);
+      window.location.reload();
   })
   .catch(error => {
       console.error(error);
+      if (error.response && error.response.status === 401) {
+        // Redirect to login page when status code is 401
+        // window.location.href = '/login'; // Replace '/login' with the actual login page URL
+      }
   });
   console.log('Save:', formData);
 };
 
 const handleDelete = () => {
-  axios.post(`/programs/deleteprogram/${selectedProgram.id}`,)
+  const accessToken = localStorage.getItem('token');
+  console.log("this is the access token",accessToken );
+  const headers = {
+    'Authorization': `${accessToken}`,
+  };
+  axios.get(`http://localhost:3000/programs/deleteprogram/${selectedProgram.name}`,{headers})
   .then(response => {
       console.log(response.data);
+      window.location.reload();
   })
   .catch(error => {
       console.error(error);
+      if (error.response && error.response.status === 401) {
+        // Redirect to login page when status code is 401
+        window.location.href = '/login'; // Replace '/login' with the actual login page URL
+      }
   });
   // Implement delete logic here
   console.log('Delete');
@@ -207,12 +309,14 @@ const handleDelete = () => {
   // const [searchInput, setSearchInput] = useState('');
 
   const handleProgramClick = (program) => {
-    if (selectedProgram === null) {
+    // console.log("hulla ho",program)
+    if (program === null) {
       console.log("hello");
       setSelectedProgram(program);
     }
     else{
-    axios.get(`/programs/getprogrambyid/${program}`,)
+      console.log("did you come here")
+    axios.get(`http://localhost:3000/programs/getprogrambyid/${program}`,)
     .then(response => {
         console.log(response.data);
         setSelectedProgram(response.data);
@@ -465,10 +569,18 @@ const handleDelete = () => {
         <div className="card-body">
           <h5 className="card-title">Details</h5>
           <ul className="list-group list-group-flush">
-            <li className="list-group-item">Price: {selectedProgram.price}</li>
-            <li className="list-group-item">Domain: {selectedProgram.domain}</li>
-            <li className="list-group-item">Type: {selectedProgram.type}</li>
-            {/* Add other details */}
+<li className="list-group-item">Price: {selectedProgram.price}</li>
+<li className="list-group-item">Domain: {selectedProgram.domain}</li>
+<li className="list-group-item">Type: {selectedProgram.type}</li>
+<li className="list-group-item">Registrations: {selectedProgram.registrations}</li>
+<li className="list-group-item">Description: {selectedProgram.description}</li>
+<li className="list-group-item">Placement Assurance: {selectedProgram.placementAssurance}</li>
+<li className="list-group-item">Image URL: {selectedProgram.imageUrl}</li>
+<li className="list-group-item">University Name: {selectedProgram.universityName}</li>
+<li className="list-group-item">Faculty Profile: {selectedProgram.facultyProfile}</li>
+<li className="list-group-item">Learning Hours: {selectedProgram.learningHours}</li>
+<li className="list-group-item">Certificate: {selectedProgram.certificate}</li>
+<li className="list-group-item">Eligibility Criteria: {selectedProgram.eligibilityCriteria}</li>
           </ul>
           <p className="card-text mt-3">{selectedProgram.description}</p>
         </div>
@@ -485,7 +597,138 @@ const handleDelete = () => {
             onChange={handleInputChange}
             className="form-control"
           />
+          
+          <div className="mt-3">
+  <label>Price:</label>
+  <input
+    type="text"
+    name="price"
+    value={editedProgram.price}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
 
+<div className="mt-3">
+  <label>Domain:</label>
+  <input
+    type="text"
+    name="domain"
+    value={editedProgram.domain}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
+
+<div className="mt-3">
+  <label>Type:</label>
+  <input
+    type="text"
+    name="type"
+    value={editedProgram.type}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
+
+<div className="mt-3">
+  <label>Registrations:</label>
+  <input
+    type="text"
+    name="registrations"
+    value={editedProgram.registrations}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
+
+<div className="mt-3">
+  <label>Description:</label>
+  <input
+    type="text"
+    name="description"
+    value={editedProgram.description}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
+
+<div className="mt-3">
+  <label>Placement Assurance:</label>
+  <input
+    type="text"
+    name="placementAssurance"
+    value={editedProgram.placementAssurance}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
+
+<div className="mt-3">
+  <label>Image URL:</label>
+  <input
+    type="text"
+    name="imageUrl"
+    value={editedProgram.imageUrl}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
+
+<div className="mt-3">
+  <label>University Name:</label>
+  <input
+    type="text"
+    name="universityName"
+    value={editedProgram.universityName}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
+
+<div className="mt-3">
+  <label>Faculty Profile:</label>
+  <input
+    type="text"
+    name="facultyProfile"
+    value={editedProgram.facultyProfile}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
+
+<div className="mt-3">
+  <label>Learning Hours:</label>
+  <input
+    type="text"
+    name="learningHours"
+    value={editedProgram.learningHours}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
+
+<div className="mt-3">
+  <label>Certificate:</label>
+  <input
+    type="text"
+    name="certificate"
+    value={editedProgram.certificate}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
+
+<div className="mt-3">
+  <label>Eligibility Criteria:</label>
+  <input
+    type="text"
+    name="eligibilityCriteria"
+    value={editedProgram.eligibilityCriteria}
+    onChange={handleInputChange}
+    className="form-control"
+  />
+</div>
           {/* Add other input fields for editing other properties */}
           
           <button className="btn btn-success me-2" onClick={handleSaveClick}>
@@ -520,12 +763,23 @@ const handleDelete = () => {
         </button>
         <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
           <ul className="navbar-nav">
-            <li className="nav-item active">
-              <a className="nav-link" href="/signup">Signup<span className="sr-only"></span></a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/login">Login</a>
-            </li>
+          {authenticated ? (
+              <>
+                <li className="nav-item">
+                  <span className="nav-link">Welcome, {username}!</span>
+                </li>
+                {/* Add other authenticated links here */}
+              </>
+            ) : (
+              <>
+                <li className="nav-item">
+                  <a className="nav-link" href="/signup">Signup<span className="sr-only"></span></a>
+                </li>
+                <li className="nav-item">
+                  <a className="nav-link" href="/login">Login</a>
+                </li>
+              </>
+            )}
           </ul>
         </div>
       </nav>
@@ -580,30 +834,19 @@ const handleDelete = () => {
             </div>
           </div>
         </li>
-        <li className="sidenav-item" onClick={() => handleProgramClick('Program 1')}>
-          <a className="sidenav-link">
-            <i className="far fa-smile pe-3"></i>
-            <span>Program 1</span>
-          </a>
-        </li>
-        {programs.map((program) => (
-            <li key={program.id} className="sidenav-item" onClick={() => handleProgramClick(program.id)}>
-              <a className="sidenav-link">
-                {/* Assuming program.icon is the class for the icon */}
-                <i className={`far ${program.icon} pe-3`}></i>
-                <span>{program.name}</span>
-              </a>
-              <hr className="mt-0 mb-2" />
-            </li> 
-          ))}
-        
+        {programs.map((program) => ( 
+  <li key={program.name} className="sidenav-item" onClick={() => handleProgramClick(program.name)}>
+   
+      <i className={`far ${program.icon} pe-3`}></i>
+      <span style={{ fontFamily: 'Arial, sans-serif', fontSize: '16px', fontWeight: 'bold' }}>{program.name}</span>
+    
+    <hr className="mt-0 mb-2" />
+  </li> 
+))}
         {/* Add other list items as needed */}
       </ul>
 
-      <div className="text-center" style={{ minHeight: '3rem' }}>
-        <hr className="mt-0 mb-2" />
-        <small>mdbootstrap.com</small>
-      </div>
+      
     </div>
           </div>
         

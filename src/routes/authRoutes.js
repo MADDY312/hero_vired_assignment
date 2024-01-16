@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
+
 router.post('/login', async (req, res) => {
   console.log("hi");
   const { username, password } = req.body;
@@ -47,6 +48,67 @@ router.post('/signup', async (req, res) => {
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+router.post('/getUserFromToken', async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Token not provided' });
+  }
+
+  try {
+    // Verify the token using the secret key
+    const decodedToken = jwt.verify(token, 'your-secret-key');
+
+    // Extract username from the decoded token
+    const username = decodedToken.username;
+
+    // Retrieve user information from the database
+    const user = await usersDb.getUserByUsername(username);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Return the user information
+    res.json({ user });
+  } catch (error) {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+});
+
+router.get('/user-details', async (req, res) => {
+  const token = req.header('Authorization');
+
+  if (!token || !token.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Token not provided or invalid format' });
+  }
+
+  try {
+    console.log("humpty dumpty");
+    // Extract the token without the 'Bearer ' prefix
+    const tokenWithoutBearer = token.split(' ')[1];
+
+    // Verify the token using the secret key
+    const decodedToken = jwt.verify(tokenWithoutBearer, 'your-secret-key');
+
+    // Extract username from the decoded token
+    const username = decodedToken.username;
+
+    // Retrieve user information from the database
+    const user = await usersDb.getUserByUsername(username);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Return the user information
+    console.log("these are user details",user);
+    res.json({ user });
+  } catch (error) {
+    return res.status(401).json({ message: 'Invalid token' });
   }
 });
 
